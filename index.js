@@ -27,7 +27,7 @@ client.on('ready', async () => {
     // Set bot activity.
     client.user.setActivity({
         name: '/akinator',
-        type: 'WATCHING'
+        type: 'PLAYING'
     })
 
     const commands = [{
