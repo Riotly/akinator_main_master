@@ -3,6 +3,8 @@ import { createServer } from 'http'
 import { Client, Intents } from 'discord.js'
 import Akinator from './Akinator.js'
 
+const keep_alive = require('./keep_alive.js')
+
 if (!process.env.DISCORD_TOKEN) {
     console.error('"DISCORD_TOKEN" is required to run the bot.')
     process.exit()
