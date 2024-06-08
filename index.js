@@ -1,36 +1,33 @@
-import 'dotenv/config' // Load environment variables.
-import { createServer } from 'http'
-import { Client, Intents } from 'discord.js'
-import Akinator from './Akinator.js'
-
-const keep_alive = require('./keep_alive.js')
+import 'dotenv/config'; // Load environment variables.
+import { createServer } from 'http';
+import { Client, Intents } from 'discord.js';
+import Akinator from './Akinator.js';
 
 if (!process.env.DISCORD_TOKEN) {
-    console.error('"DISCORD_TOKEN" is required to run the bot.')
-    process.exit()
+    console.error('"DISCORD_TOKEN" is required to run the bot.');
+    process.exit();
 }
 
-if (process.env.REPL_ID) { // Repl.it requires the app to listen for incoming requests to run
-    createServer((_, res) => res.end('Pong')).listen(process.env.PORT || '0.0.0.0')
-}
-
+// Ensure the bot listens on port 8080 for incoming requests.
+createServer((_, res) => res.end('Pong')).listen(8080, () => {
+    console.log('Server is listening on port 8080');
+});
 
 const client = new Client({
     intents: [Intents.FLAGS.GUILDS]
-})
+});
 
 // Login to Discord API
-client.login(process.env.DISCORD_TOKEN)
-
+client.login(process.env.DISCORD_TOKEN);
 
 client.on('ready', async () => {
-    console.log('Connected to Discord API!')
+    console.log('Connected to Discord API!');
 
     // Set bot activity.
     client.user.setActivity({
         name: '/akinator',
         type: 'PLAYING'
-    })
+    });
 
     const commands = [{
         name: 'akinator',
@@ -72,43 +69,45 @@ client.on('ready', async () => {
                 value: 'cn'
             }]
         }]
-    }]
+    }];
 
     // Deploy Global /slash commands
-    await client.application.commands.set(commands)
-})
+    await client.application.commands.set(commands);
+});
 
 client.on('interactionCreate', async (ctx) => {
-    if (!ctx.isCommand()) return
-    if (ctx.commandName !== 'akinator') return
+    if (!ctx.isCommand()) return;
+    if (ctx.commandName !== 'akinator') return;
 
-    await ctx.deferReply()
+    await ctx.deferReply();
 
-    const language = ctx.options.getString('language', false) || 'en'
-    const game = new Akinator(language)
+    const language = ctx.options.getString('language', false) || 'en';
+    const game = new Akinator(language);
 
-    await game.start()
+    await game.start();
     await ctx.editReply({
         components: [game.component],
         embeds: [game.embed]
-    })
+    });
 
     // To Ignore non-playing users.
-    const filter = intercation => intercation.user.id === ctx.user.id
-    const channel = await client.channels.fetch(ctx.channelId)
+    const filter = interaction => interaction.user.id === ctx.user.id;
+    const channel = await client.channels.fetch(ctx.channelId);
 
-    while (!game.ended) try {
-        await game.ask(channel, filter) // will throw an error if did not reply within 30 seconds
-        if (!game.ended) await ctx.editReply({ embeds: [game.embed], components: [game.component] })
-    } catch (err) {
-        if (err instanceof Error) console.error(err)
-        return await ctx.editReply({
-            components: [],
-            embeds: [],
-            content: 'Timeout.'
-        })
+    while (!game.ended) {
+        try {
+            await game.ask(channel, filter); // will throw an error if did not reply within 30 seconds
+            if (!game.ended) await ctx.editReply({ embeds: [game.embed], components: [game.component] });
+        } catch (err) {
+            if (err instanceof Error) console.error(err);
+            return await ctx.editReply({
+                components: [],
+                embeds: [],
+                content: 'Timeout.'
+            });
+        }
     }
 
-    await game.stop()
-    await ctx.editReply({ components: [], embeds: [game.embed] })
-})
+    await game.stop();
+    await ctx.editReply({ components: [], embeds: [game.embed] });
+});

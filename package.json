@@ -12,6 +12,7 @@
     "aki-api": "^7.0.0",
     "discord.js": "^13.17.1",
     "dotenv": "^16.0.0",
+    "eris": "^0.17.2",
     "http": "^0.0.1-security"
   },
   "engines": {
