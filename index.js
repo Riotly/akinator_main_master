@@ -9,8 +9,8 @@ if (!process.env.DISCORD_TOKEN) {
 }
 
 // Ensure the bot listens on port 8080 for incoming requests.
-createServer((_, res) => res.end('Pong')).listen(8080, () => {
-    console.log('Server is listening on port 8080');
+createServer((_, res) => res.end('Pong')).listen(10000, () => {
+    console.log('Server is listening on port 10000');
 });
 
 const client = new Client({
